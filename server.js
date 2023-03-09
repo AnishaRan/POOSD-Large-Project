@@ -15,7 +15,7 @@ client.connect(console.log("mongodb connected"));
 app.post('/api/register', async(req, res, next) =>
 {
   // incoming login, password FirstName, LastName, email
-  // outgoing error
+  // outgoing new  id, error
 
   const {login, password, FirstName, LastName, Email} = req.body;
   const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email};
@@ -25,13 +25,13 @@ app.post('/api/register', async(req, res, next) =>
   try
   {
     const database = client.db("LargeProject");
-    const result = database.collection('Users').insertOne(newUser);
+    const result = await database.collection('Users').insertOne(newUser);
     newID = result.insertedId;
   }
   catch(e)
   {
     error = e.toString();
-    await client.close();
+    //await client.close();
   }
 
   // send return to front end
@@ -109,6 +109,28 @@ app.post('/api/updateUser', async(req, res, next) =>
   let ret = {ID:id, Login:un, Password:pw, FirstName:fn,
     LastName:ln, Email:em, error: error};
   res.status(200).json(ret);
+});
+
+app.post('/api/deleteUser', async(req, res, next) =>
+{
+  // incoming login, password
+  // outgoing error code
+  let error = '';
+  const { login, password } = req.body;
+
+  try
+  {
+    const db = client.db("LargeProject");
+    const result = await db.collection('Users').deleteOne({Login:login});
+  }
+  catch(e)
+  {
+    error = e.toString();
+  }
+
+  let ret = {error: error};
+  res.status(200).json(ret);
+
 });
 
 app.listen(5000); // start Node + Express server on port 5000
