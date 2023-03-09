@@ -44,7 +44,7 @@ app.post('/api/login', async (req, res, next) =>
  // incoming: login, password
  // outgoing: id, firstName, lastName, error
 	
- var error = '';
+ let error = '';
 
  const { login, password } = req.body;
 
@@ -70,26 +70,44 @@ app.post('/api/login', async (req, res, next) =>
 app.post('/api/updateUser', async(req, res, next) =>
 {
   // incoming login, password firstName, LastName, email
-  // outgoing error
+  // outgoing login, password firstName, LastName, email
 
   const {login, password, FirstName, LastName, Email} = req.body;
-  const newUser = {login:login, password:password, FirstName:FirstName, LastName:LastName, Email:Email};
+  const newUser = {Login:login, Password:password, FirstName:FirstName, LastName:LastName, Email:Email};
   let error = '';
-
+  let fn = '';
+  let ln = '';
+  let un = '';
+  let pw = '';
+  let em = '';
+  let id = '';
   try
   {
-    // find the user's ID
     // update the information in the row of that userID
     const db = client.db("LargeProject");
-    //const result = db.client('Users').insertOne(newUser);
+    const result = await db.collection('Users').updateOne(
+                  {Login:login},
+                  {$set:newUser});
+    // now double check that user got updated              
+    const newRes = await db.collection('Users').find(newUser).toArray();
+    if(newRes.length > 0)
+    {
+      un = newRes[0].Login;
+      pw = newRes[0].Password              
+      fn = newRes[0].FirstName;
+      ln = newRes[0].LastName;
+      em = newRes[0].Email;
+      id = newRes[0]._id;
+    }
   }
   catch(e)
   {
-    Error = e.toString();
+    error = e.toString();
   }
 
   // send return to front end
-  let ret = { error: error};
+  let ret = {ID:id, Login:un, Password:pw, FirstName:fn,
+    LastName:ln, Email:em, error: error};
   res.status(200).json(ret);
 });
 
