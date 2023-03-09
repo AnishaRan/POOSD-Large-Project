@@ -14,25 +14,28 @@ client.connect(console.log("mongodb connected"));
 
 app.post('/api/register', async(req, res, next) =>
 {
-  // incoming login, password firstName, LastName, email
+  // incoming login, password FirstName, LastName, email
   // outgoing error
 
   const {login, password, FirstName, LastName, Email} = req.body;
-  const newUser = {login:login, password:password, FirstName:FirstName, LastName:LastName, Email:Email};
+  const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email};
   let error = '';
+  let newID = -1;
 
   try
   {
-    const db = client.db("LargeProject");
-    const result = db.client('Users').insertOne(newUser);
+    const database = client.db("LargeProject");
+    const result = database.collection('Users').insertOne(newUser);
+    newID = result.insertedId;
   }
   catch(e)
   {
-    Error = e.toString();
+    error = e.toString();
+    await client.close();
   }
 
   // send return to front end
-  let ret = { error: error};
+  let ret = {ID: newID, error: error};
   res.status(200).json(ret);
 });
 
@@ -54,12 +57,13 @@ app.post('/api/login', async (req, res, next) =>
 
  if( results.length > 0 )
  {
-  id = results[0].UserID;
+  id = results[0]._id;
   fn = results[0].FirstName;
   ln = results[0].LastName;
+  em = results[0].Email;
  }
 
- var ret = { id:id, firstName:fn, lastName:ln, error:''};
+ var ret = { id:id, firstName:fn, lastName:ln, Email:em, error:''};
  res.status(200).json(ret);
 });
 
