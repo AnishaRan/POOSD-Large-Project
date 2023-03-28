@@ -11,6 +11,29 @@ const MongoClient = require("mongodb").MongoClient;
 const client = new MongoClient(url);
 client.connect(console.log("mongodb connected"));
 
+exports.getUserInfo = async function ( userId ) {
+    var error = '';
+
+    try {
+        const db = client.db("LargeProject");
+        const results = await db.collection('Users').find({"_id" : new mongoose.Types.ObjectId(userId)}).toArray();
+
+        var _ret = [];
+        for( var i=0; i<results.length; i++ )
+        {
+            _ret.push( results[i]);
+        }
+
+        if (results.length != 1) {
+            throw new Error('UserId Invalid');
+        }
+        return _ret[0];
+    } catch(e) {
+        console.log("Error: '" + e + "' in getUserInfo()");
+        return null;
+    }
+}
+
 exports.setApp = function ( app, client ) {
     app.post('/user/register', async(req, res, next) =>{
         // incoming login, password FirstName, LastName, email
