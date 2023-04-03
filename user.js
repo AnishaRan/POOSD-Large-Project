@@ -88,7 +88,7 @@ exports.setApp = function ( app, client ) {
         res.status(200).json(ret);
     });
 
-    app.post('/api/updateUser', async(req, res, next) =>
+    app.post('/user/update', async(req, res, next) =>
     {
         // incoming login, password firstName, LastName, email
         // outgoing login, password firstName, LastName, email
@@ -130,7 +130,7 @@ exports.setApp = function ( app, client ) {
         res.status(200).json(ret);
     });
 
-    app.post('/api/deleteUser', async(req, res, next) =>
+    app.post('/user/delete', async(req, res, next) =>
     {
         // incoming login, password
         // outgoing error code
