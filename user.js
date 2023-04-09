@@ -150,4 +150,40 @@ exports.setApp = function ( app, client ) {
         let ret = {error: error};
         res.status(200).json(ret);
     });
+    
+    app.post ('/user/addClass', async(req, res, next) => {
+        let error = '';
+        const {Number, userId} = req.body;
+
+        try {
+            var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
+            
+            if (course == null || course.length != 1) {
+                throw "Invalid Class Info";
+            }
+
+            const Course = course[0];
+
+            const db = client.db("LargeProject");
+            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
+            
+            var currentClasses = user.Classes;
+            console.log(currentClasses);
+
+            for (var i = 0; i < currentClasses.length; i++) {
+                if (currentClasses[i].Number == Number) {
+                    throw "Class Already Added";
+                }
+            }
+
+            const result = await db.collection('Users').updateOne(
+                { "_id" : new mongoose.Types.ObjectId(userId) },
+                {$push:{"Classes": Course}});
+        } catch(e) {
+            error = e.toString();
+        }
+        
+        ret = {error: error};
+        res.status(200).json(ret);
+    });
 }
