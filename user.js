@@ -1,6 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const Class = require('./class.js');
+const Email = require('./email.js');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -9,7 +13,21 @@ app.use(bodyParser.json());
 const url = 'mongodb+srv://jbenitezconde:WeLoveCOP4331@cluster0.okas9ix.mongodb.net/?retryWrites=true&w=majority';
 const MongoClient = require("mongodb").MongoClient;
 const client = new MongoClient(url);
-client.connect(console.log("mongodb connected"));
+client.connect(console.log("User.js:\t\tmongodb connected"));
+
+exports.verifyCookieToken = async function (token, userId) {
+    var error = '';
+
+    try {
+        const db = client.db("LargeProject");
+        var results = await db.collection('Users').findOne({"_id" : new mongoose.Types.ObjectId(userId)}).toArray();
+    } catch(e) {
+        error = e.toSrting();
+        return false;
+    }
+
+    return (results.CookieToken == token);
+}
 
 exports.getUserInfo = async function ( userId ) {
     var error = '';
@@ -35,29 +53,76 @@ exports.getUserInfo = async function ( userId ) {
 }
 
 exports.setApp = function ( app, client ) {
+    app.post('/user/verify', async (req, res, next) => {
+        var err = '';
+
+        const { userKey, userId } = req.body;
+
+        try {
+            let user = await this.getUserInfo( userId );
+
+            // Check if the user exists and there are no duplicates
+            if (user == null) {
+                err = 'UserId Invalid';
+                throw new Error(err);
+            } else {
+                // Check if the user is already verified
+                if ( user.Verified ) {
+                    err = 'User Already Verified';
+                    throw new Error(err);
+                }
+                
+                // Check if the user's verification key is correct
+                if (userKey != user.VerKey) {
+                    err = 'Incorrect Verification Key';
+                    throw new Error(err);
+                }
+                
+                // Update the user's verification key to null
+                const db = client.db("LargeProject");
+                const result = await db.collection('Users').updateOne(
+                                        { "_id" : new mongoose.Types.ObjectId(userId) },
+                                        {$set:{"VerKey": "", "Verified": true}});
+                
+                err = 'User Verified';
+                var ret = { Success: true, error: err };
+                res.status(200).json(ret);
+
+            }
+        } catch (e) {
+            var ret = { error: err };
+            res.status(200).json(ret);
+        }
+    });
+
     app.post('/user/register', async(req, res, next) =>{
         // incoming login, password FirstName, LastName, email
         // outgoing new  id, error
 
         const {login, password, FirstName, LastName, Email} = req.body;
-        const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email};
+        var cookieToken = Email.makeToken(20);
+        const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email, VerKey:'', Verified:false, CookieToken:cookieToken};
         let error = '';
+        let success = true;
         let newID = -1;
+        let insertedUser;
 
         try
         {
             const database = client.db("LargeProject");
             const result = await database.collection('Users').insertOne(newUser);
             newID = result.insertedId;
+            insertedUser = result;
         }
         catch(e)
         {
+            success = false;
             error = e.toString();
             //await client.close();
         }
 
         // send return to front end
-        let ret = {ID: newID, error: error};
+        let ret = {Success: success, User: insertedUser, error: error};
         res.status(200).json(ret);
     });
 
@@ -67,35 +132,43 @@ exports.setApp = function ( app, client ) {
             
         let error = '';
 
-        const { login, password } = req.body;
+        const { Login, Password } = req.body;
 
         const db = client.db("LargeProject");
-        const results = await db.collection('Users').find({Login:login,Password:password}).toArray();
+        const results = await db.collection('Users').find({Login:Login,Password:Password}).toArray();
 
         var id = -1;
         var fn = '';
         var ln = '';
+        var em = '';
 
         if( results.length > 0 )
         {
-        id = results[0]._id;
-        fn = results[0].FirstName;
-        ln = results[0].LastName;
-        em = results[0].Email;
+            id = results[0]._id;
+            fn = results[0].FirstName;
+            ln = results[0].LastName;
+            em = results[0].Email;
         }
-
-        var ret = { id:id, firstName:fn, lastName:ln, Email:em, error:''};
+        else
+        {
+            error = "failed to retrieve information.";
+        }
+            
+        var cookieToken = jwt.sign({ Email:em}, 'secret');
+        var ret = {id:id, FirstName:fn, LastName:ln, Email:em, CookieToken:cookieToken,error:error};    
         res.status(200).json(ret);
     });
 
-    app.post('/user/update', async(req, res, next) =>
+    app.post('/api/updateUser', async(req, res, next) =>
     {
         // incoming login, password firstName, LastName, email
         // outgoing login, password firstName, LastName, email
 
-        const {login, password, FirstName, LastName, Email} = req.body;
+        const {userId, login, password, FirstName, LastName, Email, CookieToken} = req.body;
         const newUser = {Login:login, Password:password, FirstName:FirstName, LastName:LastName, Email:Email};
         let error = '';
+        let success = true;
+
         let fn = '';
         let ln = '';
         let un = '';
@@ -104,6 +177,10 @@ exports.setApp = function ( app, client ) {
         let id = '';
         try
         {
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
             // update the information in the row of that userID
             const db = client.db("LargeProject");
             const result = await db.collection('Users').updateOne( {Login:login}, {$set:newUser});
@@ -121,20 +198,22 @@ exports.setApp = function ( app, client ) {
         }
         catch(e)
         {
+            success = false;
             error = e.toString();
         }
 
         // send return to front end
-        let ret = {ID:id, Login:un, Password:pw, FirstName:fn,
+        let ret = {Success:success, ID:id, Login:un, Password:pw, FirstName:fn,
             LastName:ln, Email:em, error: error};
         res.status(200).json(ret);
     });
 
-    app.post('/user/delete', async(req, res, next) =>
+    app.post('/api/deleteUser', async(req, res, next) =>
     {
         // incoming login, password
         // outgoing error code
         let error = '';
+        let success = true;
         const { login, password } = req.body;
 
         try
@@ -144,18 +223,24 @@ exports.setApp = function ( app, client ) {
         }
         catch(e)
         {
+            success = false;
             error = e.toString();
         }
 
-        let ret = {error: error};
+        let ret = {Success: success, error: error};
         res.status(200).json(ret);
     });
-    
+
     app.post ('/user/addClass', async(req, res, next) => {
         let error = '';
-        const {Number, userId} = req.body;
+        let success = true;
+        const {Number, userId, CookieToken} = req.body;
 
         try {
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
             var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
             
             if (course == null || course.length != 1) {
@@ -180,10 +265,52 @@ exports.setApp = function ( app, client ) {
                 { "_id" : new mongoose.Types.ObjectId(userId) },
                 {$push:{"Classes": Course}});
         } catch(e) {
+            success = false;
             error = e.toString();
         }
         
-        ret = {error: error};
+        ret = {Success: success, error: error};
+        res.status(200).json(ret);
+    });
+
+    app.post ('/user/addClassTaken', async(req, res, next) => {
+        let error = '';
+        let success = true;
+        const {Number, userId, CookieToken} = req.body;
+
+        try {
+            // if (!this.verifyCookieToken(CookieToken, userId)) {
+            //     throw 'Invalid Cookie Token';
+            // }
+
+            var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
+            
+            if (course == null || course.length != 1) {
+                throw "Invalid Class Info";
+            }
+
+            const Course = course[0];
+
+            const db = client.db("LargeProject");
+            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
+            
+            var currentClasses = user.ClassesTaken
+
+            for (var i = 0; currentClasses != null && i < currentClasses.length; i++) {
+                if (currentClasses[i].Number == Number) {
+                    throw "Class Already Added";
+                }
+            }
+
+            const result = await db.collection('Users').updateOne(
+                { "_id" : new mongoose.Types.ObjectId(userId) },
+                {$push:{"ClassesTaken": Course}});
+        } catch(e) {
+            success = false;
+            error = e.toString();
+        }
+        
+        ret = {Success: success, error: error};
         res.status(200).json(ret);
     });
 }

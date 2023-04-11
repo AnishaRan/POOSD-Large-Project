@@ -46,7 +46,7 @@ async function tokensender (user, tok) {
     });
 }
 
-function makeid(length) {
+exports.makeToken = function (length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
