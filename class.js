@@ -51,7 +51,9 @@ exports.setApp = function ( app, client ) {
         // outgoing: error, results
 
         const { Code, Type, Title, Section, Number, Modality, Credits, ProfessorFName, ProfessorLName, Times, Room } = req.body;
-
+        
+        var error = '';
+        var success = true;
         
         try {
             let code = Code.trim();
@@ -64,18 +66,17 @@ exports.setApp = function ( app, client ) {
             let times = Times.trim();
             let room = Room.trim();
 
-            var error = '';
-
             var results = await this.findClass(code, type, title, section, Number, modality, Credits, professorFName, professorLName, times, room);
             if (results == null) {
                 throw "No results found";
             }
 
         } catch (e) {
+            success = false;
             error = e.toString();
         }
 
-        var ret = { error: error, results: results };
+        var ret = {Success: success, error: error, results: results };
         res.status(200).json(ret);
     });
 
