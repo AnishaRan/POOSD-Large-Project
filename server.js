@@ -17,5 +17,8 @@ instructor.setApp( app, client );
 var user = require('./user.js');
 user.setApp( app, client );
 
+var courses = require('./class.js');
+courses.setApp( app, client );
+
 
 app.listen(5000); // start Node + Express server on port 5000
