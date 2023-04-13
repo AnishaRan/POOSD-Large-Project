@@ -313,4 +313,71 @@ exports.setApp = function ( app, client ) {
         ret = {Success: success, error: error};
         res.status(200).json(ret);
     });
+    
+    app.post ('/user/addClassTaken', async(req, res, next) => {
+        let error = '';
+        let success = true;
+        const {Number, userId, CookieToken} = req.body;
+
+        try {
+            // if (!this.verifyCookieToken(CookieToken, userId)) {
+            //     throw 'Invalid Cookie Token';
+            // }
+
+            var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
+            
+            if (course == null || course.length != 1) {
+                throw "Invalid Class Info";
+            }
+
+            const Course = course[0];
+
+            const db = client.db("LargeProject");
+            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
+            
+            var currentClasses = user.ClassesTaken
+
+            for (var i = 0; currentClasses != null && i < currentClasses.length; i++) {
+                if (currentClasses[i].Number == Number) {
+                    throw "Class Already Added";
+                }
+            }
+
+            const result = await db.collection('Users').updateOne(
+                { "_id" : new mongoose.Types.ObjectId(userId) },
+                {$push:{"ClassesTaken": Course}});
+        } catch(e) {
+            success = false;
+            error = e.toString();
+        }
+        
+        ret = {Success: success, error: error};
+        res.status(200).json(ret);
+    });
+    
+    app.get('/user/getClasses/:userId/:jwt', async(req, res, next) => {
+        
+        let error = '';
+        let success = true;
+        const {userId, jwt} = req.params;
+        
+        console.log(userId);
+        
+        try {
+            if (!this.verifyCookieToken(jwt, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
+            const db = client.db("LargeProject");
+            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
+            
+            var currentClasses = user.Classes;
+        } catch(e) {
+            success = false;
+            error = e.toString();
+        }
+        
+        ret = {Success: success, Classes: currentClasses, error: error};
+        res.status(200).json(ret);
+    });
 }
