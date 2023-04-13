@@ -1,10 +1,8 @@
 import React from 'react';
-
 function PageTitle()
 {
-  return(
-   <h1 id="title">COP 4331 MERN Stack Demo</h1>
-  );
+   return(
+     <div class="d-flex justify-content-center pb-2 pageTitle">U [Actually] Can Finish Scheduling</div>
+   );
 };
-
 export default PageTitle;

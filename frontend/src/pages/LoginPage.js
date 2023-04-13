@@ -1,17 +1,14 @@
 import React from 'react';
-
-import PageTitle from '../components/PageTitle';
 import Login from '../components/Login';
+import '../App.css';
+
 
 const LoginPage = () =>
 {
-
-  return(
-   <div>
-    <PageTitle />
-    <Login />
-   </div>
-  );
+    return(
+      <div class="login-bg">
+        <Login />
+      </div>
+    );
 };
-
 export default LoginPage;
