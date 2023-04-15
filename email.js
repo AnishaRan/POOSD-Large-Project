@@ -62,8 +62,10 @@ exports.makeToken = function (length) {
 
 exports.setApp = function ( app, client ) {
     app.post('/email/sendverification', async (req, res, next) => {
-
         const { userId } = req.body;
+
+        var error = '';
+        var success = true;
 
         try {
             var user = await User.getUserInfo(userId);
@@ -74,22 +76,25 @@ exports.setApp = function ( app, client ) {
 
             console.log("User: " + user.Email);
 
-            var verificationString = makeid(20);
+            var verificationString = this.makeToken(20);
             const db = client.db("LargeProject");
             db.collection('Users').updateOne({"_id" : new mongoose.Types.ObjectId(userId)}, {$set: {"VerKey": verificationString}});
 
             await tokensender(user, verificationString);
-
-            res.status(200).json({err : 'Email Sent Successfully'});
         } catch (e) {
-            console.log("Error: '" + e + "' in email/sendverification");
-            res.status(200).json({err : 'Email Not Sent Successfully'});
+            error = e.toString();
+            success = false;
         }
+
+        res.status(200).json({Success: success, err : error});
     });
 
     app.get('/email/verify/:userId/:token', async (req, res, next) => {
         const token = req.params.token;
         const userId = req.params.userId;
+
+        var error = '';
+        var success = true;
 
         try {
             var user = await User.getUserInfo(userId);
@@ -101,13 +106,14 @@ exports.setApp = function ( app, client ) {
             if (user.VerKey == token) {
                 const db = client.db("LargeProject");
                 db.collection('Users').updateOne({"_id" : new mongoose.Types.ObjectId(userId)}, {$set: {"Verified": true}});
-                res.status(200).json({err : 'Email Verified Successfully'});
             } else {
-                res.status(200).json({err : 'Email Not Verified Successfully'});
+                throw 'Token Invalid';
             }
         } catch (e) {
-            console.log("Error: '" + e + "' in getUserInfo()");
-            res.status(200).json({err : 'Email Not Verified Successfully'});
+            error = e.toString();
+            success = false;
         }
+
+        res.status(200).json({Success: success, err : error});
     });
 }

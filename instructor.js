@@ -9,21 +9,31 @@ app.use(bodyParser.json());
 const url = 'mongodb+srv://jbenitezconde:WeLoveCOP4331@cluster0.okas9ix.mongodb.net/?retryWrites=true&w=majority';
 const MongoClient = require("mongodb").MongoClient;
 const client = new MongoClient(url);
-client.connect(console.log("mongodb connected"));
+client.connect(console.log("Instructor.js:\t\tmongodb connected"));
 
-async function findInstructor(fName, lName) {
-    var error = '';
-
-    const db = client.db("LargeProject");
-    const results = await db.collection('Instructors').find({"FirstName":{$regex:fName+'.*', $options:'r'}, "LastName":{$regex:lName  +'.*', $options:'r'}}).toArray();
-
-    var _ret = [];
-    for( var i=0; i<results.length; i++ )
-    {
-        _ret.push( results[i]);
+exports.findInstructor = async function (fName, lName, rating) {
+    const searchData = {
+        FirstName: fName,
+        LastName: lName,
+        RMPRating: rating
+    };
+    
+    // Build the query object
+    const query = {};
+    for (const key in searchData) {
+        if (searchData[key] !== undefined && searchData[key] !== null && searchData[key] !== '') {
+            if (key === 'Number' || key === 'Credits') {
+                query[key] = parseInt(searchData[key]);
+            } else {
+                query[key] = { $regex: new RegExp(searchData[key], 'i') };
+            }
+        }
     }
-
-    return (_ret.length == 0) ? null : _ret;
+    
+    // Find the document(s) that match the query
+    const db = client.db('LargeProject');
+    const results = await db.collection('Classes').find(query).toArray();
+    return (results.length > 0) ? results : null;
 }
 
 exports.setApp = function ( app, client )
@@ -44,6 +54,7 @@ exports.setApp = function ( app, client )
         };
 
         var error = '';
+        var success = true;
         
         try
         {
@@ -52,6 +63,7 @@ exports.setApp = function ( app, client )
         }
         catch(e)
         {
+            success = false;
             error = e.toString();
         }
 
@@ -68,13 +80,14 @@ exports.setApp = function ( app, client )
 
         var error = '';
 
-        const { FirstName, LastName } = req.body;
+        const { FirstName, LastName, RMPRating } = req.body;
 
+        // FirstName = FirstName.trim();
         var fName = FirstName.trim();
         var lName = LastName.trim();
 
         try {
-            var _ret = await findInstructor(fName, lName);
+            var _ret = await findInstructor(fName, lName, RMPRating);
         } catch (e) {
             error = e.toString();
         }
@@ -88,36 +101,39 @@ exports.setApp = function ( app, client )
         // outgoing: error
 
         var error = '';
+        var success = true;
 
         const { FirstName, LastName } = req.body;
 
         var fName = FirstName.trim();
         var lName = LastName.trim();
 
-        var _ret = await findInstructor(fName, lName);
+        var _ret = await findInstructor(fName, lName, null);
 
         if (_ret == null) {
-            var ret = {results:null, error:"Instructor not found"};
+            success = false;
+            var ret = {Success: success, results:null, error:"Instructor not found"};
             res.status(200).json(ret);
         } else {
             try {
                 const db = client.db("LargeProject");
                 const result = await db.collection('Instructors').deleteOne({"FirstName":fName, "LastName":lName});
             } catch (e) {
+                success = false;
                 error = e.toString();
-                var ret = {results:null, error:error};
+                var ret = {Success: success, results:null, error:error};
                 res.status(200).json(ret);
                 return;
             }
         }
 
-        _ret = await findInstructor(fName, lName);
+        _ret = await findInstructor(fName, lName, null);
 
         if (_ret == null) {
-            var ret = {results:null, error:error};
+            var ret = {Success: success, results:null, error:error};
             res.status(200).json(ret);
         } else {
-            var ret = {results:null, error:"Delete failed"};
+            var ret = {Success: success, results:null, error:"Delete failed"};
             res.status(200).json(ret);
         }
     });
@@ -127,6 +143,7 @@ exports.setApp = function ( app, client )
         // outgoing: error
 
         var error = '';
+        var success = true;
 
         const {oFirstName, oLastName, FirstName, LastName, RMPRating, CurrentClasses, MainOffice } = req.body;
 
@@ -136,29 +153,32 @@ exports.setApp = function ( app, client )
         var lName = LastName.trim();
 
         //check for duplicate instructor
-        var _ret = await findInstructor(fName, lName);
+        var _ret = await findInstructor(fName, lName, null);
 
         if (_ret != null) {
-            var ret = {results:null, error:"Invalid Update Fields"};
+            success = false;
+            var ret = {Success: success, results:null, error:"Invalid Update Fields"};
             res.status(200).json(ret);
             return;
         }
         
-        var _ret = await findInstructor(oFName, oLName);
+        var _ret = await findInstructor(oFName, oLName, null);
         
         if (_ret == null) {
-            var ret = {results:null, error:"Instructor not found"};
+            success = false;
+            var ret = {Success: success, results:null, error:"Instructor not found"};
             res.status(200).json(ret);
         } else {
             try {
                 const db = client.db("LargeProject");
                 const result = await db.collection('Instructors').updateOne({"FirstName":oFName, "LastName":oLName}, {$set:{"FirstName":fName, "LastName":lName, "RMPRating":RMPRating, "CurrentClasses":CurrentClasses, "MainOffice":MainOffice}});
             } catch(e) {
+                success = false;
                 error = e.toString();
             }
         }
 
-        var ret = {results:null, error:''};
+        var ret = {Success: success, results:null, error:''};
         res.status(200).json(ret);
     });
 }

@@ -1,0 +1,63 @@
+paths:
+  /Login.php:
+    post:
+      tags:
+      - Users
+      summary: User Log in
+      operationId: doLogin
+      description: Logs user into Comunity Manager
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: User
+        description: User to Log in
+        schema:     # refers to the definition that will be used for testing
+          $ref: '#/definitions/Login'
+      responses:  # responses from the ______ that indicated if the transfer was a success or if there was an error
+        200: 
+          description: OK
+        403:
+          description: UCF IT Error
+        404:
+          description: URL Not Found
+        500:
+          description: Server Error/Endpoint Crash
+
+  /email/sendverification:
+    post:
+      tags:
+      - Email
+      summary: Sends Email Verification
+      oprationId: sendVerification
+      description: Sends an email to the users email with a link to verify the users email.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: userId
+        description: Valid userId
+        schema:
+          $ref: '#/definitions/userId
+      responses:
+        200:
+          description: OK
+        404:
+          description: URL Not Found
+        500:
+          description: Server Error/Endpoint Crash
+
+  /email/verify/:userId/:token
+    get:
+      tags:
+      - Email
+      summary: verifies user Email
+      operationId: verifyEmail
+      description: based on the userId and email parameters said account would get verified.
+      produces:
+      - application/json
+      

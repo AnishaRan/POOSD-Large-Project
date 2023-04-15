@@ -19,10 +19,11 @@ exports.verifyCookieToken = async function (token, userId) {
     var error = '';
 
     try {
-        const db = client.db("LargeProject");
-        var results = await db.collection('Users').findOne({"_id" : new mongoose.Types.ObjectId(userId)}).toArray();
+        var results = await this.getUserInfo(userId);
+        if (results == null) {
+            throw new Error('UserId Invalid');
+        }
     } catch(e) {
-        error = e.toSrting();
         return false;
     }
 
@@ -134,6 +135,7 @@ exports.setApp = function ( app, client ) {
 
         const { Login, Password } = req.body;
 
+        try {
         const db = client.db("LargeProject");
         const results = await db.collection('Users').find({Login:Login,Password:Password}).toArray();
 
@@ -155,17 +157,33 @@ exports.setApp = function ( app, client ) {
         }
             
         var cookieToken = jwt.sign({ Email:em}, 'secret');
-        var ret = {id:id, FirstName:fn, LastName:ln, Email:em, CookieToken:cookieToken,error:error};    
+        const result = await db.collection('Users').updateOne({Login:Login,Password:Password}, {$set:{CookieToken:cookieToken}});
+        
+        if (result.modifiedCount != 1) {
+            throw "failed to update cookie token.";
+        }
+
+        var ret = {id:id, FirstName:fn, LastName:ln, Email:em, CookieToken:cookieToken,error:error, succcess: true};
+        } catch (e) {
+            var ret = {error:e.toString(), success:false};
+        }
         res.status(200).json(ret);
     });
 
-    app.post('/api/updateUser', async(req, res, next) =>
+    app.post('/user/update', async(req, res, next) =>
     {
         // incoming login, password firstName, LastName, email
         // outgoing login, password firstName, LastName, email
 
         const {userId, login, password, FirstName, LastName, Email, CookieToken} = req.body;
-        const newUser = {Login:login, Password:password, FirstName:FirstName, LastName:LastName, Email:Email};
+        const newUser = {
+            Login:login,
+            Password:password,
+            FirstName:FirstName,
+            LastName:LastName,
+            Email:Email
+        };
+
         let error = '';
         let success = true;
 
@@ -177,13 +195,13 @@ exports.setApp = function ( app, client ) {
         let id = '';
         try
         {
-            if (!this.verifyCookieToken(CookieToken, userId)) {
+            if (!await this.verifyCookieToken(CookieToken, userId)) {
                 throw 'Invalid Cookie Token';
             }
 
             // update the information in the row of that userID
             const db = client.db("LargeProject");
-            const result = await db.collection('Users').updateOne( {Login:login}, {$set:newUser});
+            const result = await db.collection('Users').updateOne( {"_id" : new mongoose.Types.ObjectId(userId)}, {$set:newUser});
             // now double check that user got updated              
             const newRes = await db.collection('Users').find(newUser).toArray();
             if(newRes.length > 0)
@@ -214,12 +232,16 @@ exports.setApp = function ( app, client ) {
         // outgoing error code
         let error = '';
         let success = true;
-        const { login, password } = req.body;
+        const { login, password, CookieToken } = req.body;
 
         try
         {
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
             const db = client.db("LargeProject");
-            const result = await db.collection('Users').deleteOne({Login:login});
+            const result = await db.collection('Users').deleteOne({Login:login, Password:password});
         }
         catch(e)
         {
@@ -272,47 +294,6 @@ exports.setApp = function ( app, client ) {
         ret = {Success: success, error: error};
         res.status(200).json(ret);
     });
-
-    app.post ('/user/addClassTaken', async(req, res, next) => {
-        let error = '';
-        let success = true;
-        const {Number, userId, CookieToken} = req.body;
-
-        try {
-            // if (!this.verifyCookieToken(CookieToken, userId)) {
-            //     throw 'Invalid Cookie Token';
-            // }
-
-            var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
-            
-            if (course == null || course.length != 1) {
-                throw "Invalid Class Info";
-            }
-
-            const Course = course[0];
-
-            const db = client.db("LargeProject");
-            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
-            
-            var currentClasses = user.ClassesTaken
-
-            for (var i = 0; currentClasses != null && i < currentClasses.length; i++) {
-                if (currentClasses[i].Number == Number) {
-                    throw "Class Already Added";
-                }
-            }
-
-            const result = await db.collection('Users').updateOne(
-                { "_id" : new mongoose.Types.ObjectId(userId) },
-                {$push:{"ClassesTaken": Course}});
-        } catch(e) {
-            success = false;
-            error = e.toString();
-        }
-        
-        ret = {Success: success, error: error};
-        res.status(200).json(ret);
-    });
     
     app.post ('/user/addClassTaken', async(req, res, next) => {
         let error = '';
@@ -320,9 +301,9 @@ exports.setApp = function ( app, client ) {
         const {Number, userId, CookieToken} = req.body;
 
         try {
-            // if (!this.verifyCookieToken(CookieToken, userId)) {
-            //     throw 'Invalid Cookie Token';
-            // }
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
 
             var course = await Class.findClass("", "", "", "", Number, "", null, "", "", "", "");
             
@@ -379,5 +360,31 @@ exports.setApp = function ( app, client ) {
         
         ret = {Success: success, Classes: currentClasses, error: error};
         res.status(200).json(ret);
+    });
+
+    app.get('/user/getUser/:userId/:jwt', async(req, res, next) => {
+        var error = '';
+        var success = true;
+
+        const {userId, jwt} = req.params;
+
+        try {
+            if (!this.verifyCookieToken(jwt, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
+            var ret = await this.getUserInfo(userId);
+
+            if (ret == null) {
+                throw 'Invalid User ID';
+            }
+        } catch(e) {
+            success = false;
+            ret = null;
+            error = e.toString()
+        }
+
+        retObj = {Success: success, User: ret, error: error};
+        res.status(200).json(retObj);
     });
 }
