@@ -388,7 +388,7 @@ exports.setApp = function ( app, client ) {
         res.status(200).json(retObj);
     });
 
-    app/post('user/topoSort', async(req, res, next) => 
+    app.post('user/topoSort', async(req, res, next) => 
     {
     
     const prerequisites = [['COP2500C', 'COP3223C'], ['CDA3103C', 'COP3223C'], ['CIS3360', 'COP3223C'], ['COP3502C', 'COP3223C'], ['COP3330', 'COP3223C'], ['COP3503C', 'COP3330'], ['COP3503C', 'COP3502C'], ['COP3503C', 'COT3100C'], ['COP3402', 'CDA3103C'], ['COP3402', 'COP3502C'], ['COP4331C', 'COP3503C'], ['COP4934', 'COP3402'], ['COP4935', 'COP4934'], ['COT4210', 'COP3503C']];
