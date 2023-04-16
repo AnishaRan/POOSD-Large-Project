@@ -35,7 +35,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 13px;
+  padding: 15px 15px;
 }
 
 .bars {
@@ -57,7 +57,7 @@ main {
   display: flex;
   color: #fff;
   gap: 11px;
-  padding: 5px 10px;
+  padding: 5px 15px;
   border-right: 4px solid transparent;
   text-decoration: none;
   transition: 0.1s cubic-bezier(0.6, -0.28, 0.735, 0.045);
