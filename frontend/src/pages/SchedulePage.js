@@ -1,24 +1,22 @@
 // React Libraries
 import React, { useState } from 'react';
-import Schedule from '../components/Schedule';
 
 // Bootstrap
-import Container from 'react-bootstrap/Container';
+import Schedule from '../components/Schedule';
+import Row from 'react-bootstrap/Row';
 
 
 function SchedulePage() {
 
 
 	return(
-        <div className="container">
-      		<Row classname = "d-flex align-items-center">
-      		<h1>Schedule</h1>
-	      </Row>      
-	      <hr/>
-	      <Row className="d-flex justify-content-center">
-		<Schedule className= "d-flex col"/>
+	    <div className="d-flex container">
+	      <Row className = "row">
+		<h1 className="col">Schedule</h1>
+		<hr/>
+		<Schedule className="col col-lg-2"/>
 	      </Row>
-	</div>
+	    </div>
 	);
 };
 export default SchedulePage;
