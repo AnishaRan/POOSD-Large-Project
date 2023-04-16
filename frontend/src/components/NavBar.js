@@ -5,8 +5,7 @@ import {
   FaBars, 
   FaTh,
   FaList,
-  FaRegCalendar,
-  FaRegSun
+  FaRegCalendar
 } from "react-icons/fa"; // Temp icons for now, can be updated for better fit
 import Logo from '../images/logo.png';
 import './navbar.css';
@@ -101,7 +100,7 @@ const NavBar = ({children}) => {
               }
 
               return (
-                <NavLink to={route.path}  key={index} className="link" activeClassName="active" >
+                <NavLink to={route.path}  key={index} className="link" activeclassname="active" >
                   <div className="icon">{route.icon}</div>
                   <AnimatePresence>
                     {isOpen && (
