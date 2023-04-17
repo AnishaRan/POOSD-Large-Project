@@ -2,15 +2,16 @@
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import {
-  FaBars, 
-  FaTh,
+  FaBars,
   FaList,
   FaRegCalendar
-} from "react-icons/fa"; // Temp icons for now, can be updated for better fit
-import Logo from '../images/logo.png';
-import './navbar.css';
+} from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "./SidebarMenu";
+
+// Components
+import './navbar.css';
+import Logo from '../images/logo.png';
 
 
 const NavBar = ({children}) => {
@@ -20,19 +21,14 @@ const NavBar = ({children}) => {
 
   const menuItem = [
     {
-      path:"/",
-      name:"Dashboard",
-      icon:<FaTh/>,
+      path:"/schedule",
+      name:"Schedule",
+      icon:<FaRegCalendar/>,
     },
     {
       path:"/courses",
       name:"Courses",
       icon:<FaList/>,
-    },
-    {
-      path:"/schedule",
-      name:"Schedule",
-      icon:<FaRegCalendar/>,
     }
   ]
 
