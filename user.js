@@ -388,69 +388,105 @@ exports.setApp = function ( app, client ) {
         res.status(200).json(retObj);
     });
 
-    app.post('user/topoSort', async(req, res, next) => 
-    {
+    app.post('/user/topoSort', async(req, res, next) => {
     
-    const prerequisites = [['COP2500C', 'COP3223C'], ['CDA3103C', 'COP3223C'], ['CIS3360', 'COP3223C'], ['COP3502C', 'COP3223C'], ['COP3330', 'COP3223C'], ['COP3503C', 'COP3330'], ['COP3503C', 'COP3502C'], ['COP3503C', 'COT3100C'], ['COP3402', 'CDA3103C'], ['COP3402', 'COP3502C'], ['COP4331C', 'COP3503C'], ['COP4934', 'COP3402'], ['COP4935', 'COP4934'], ['COT4210', 'COP3503C']];
+    
+		const {Number, userId, Code} = req.body;
+    
+		const courseX = Code;
+    
+		console.log("This is the course variable value:" + courseX);
+		const prerequisites = [['COP2500C', 'COP3223C'], ['CDA3103C', 'COP3223C'], ['CIS3360', 'COP3223C'], ['COP3502C', 'COP3223C'], ['COP3330', 'COP3223C'], ['COP3503C', 'COP3330'], ['COP3503C', 'COP3502C'], ['COP3503C', 'COT3100C'], ['COP3402', 'CDA3103C'], ['COP3402', 'COP3502C'], ['COP4331C', 'COP3503C'], ['COP4934', 'COP3402'], ['COP4935', 'COP4934'], ['COT4210', 'COP3503C']];
 
     
-    function search_2d_array(arr, target) 
-    {
-        let result = [];
-        for (let sub_arr of arr) 
-        {
-            if (sub_arr.length >= 2 && sub_arr[0] === target)
-            {
-                result.push(sub_arr);
-            }
-        }
-        return result;
-    }
+		function search_2d_array(arr, target) 
+		{
+			let result = [];
+			for (let sub_arr of arr) 
+			{
+				if (sub_arr.length >= 2 && sub_arr[0] === target)
+				{
+					console.log(sub_arr);
+					result.push(sub_arr);
+				}
+			}
+			console.log("This is the result value:" + result);
+			return result;
+		}
 
     
-        let error = '';
-        let success = true;
+		let error = '';
+		let success = true;
 
-        const {Number, userID, Code} = req.body;
+        //const {Number, userID, Code} = req.body;
 
         try 
         {
-        let rez = [];
-        let prereqNow = [];
         
-        var course = await Class.findClass(Code, "LEC", "", "", Number, "", null, "", "", "", "");
+        	let rex = [];
+        	var rez = [];
+        	let prereqNow = [];
+        
+			var course = await Class.findClass(Code, "LEC", "", "", Number, "", null, "", "", "", "");
+			console.log("This is the course:" + Code);
             
-        var course2 = await Class.findClass(Code, "LAB", "", "", "", "", null, "", "", "", "");
+			//var course2 = await Class.findClass(Code, "LAB", "", "", "", "", null, "", "", "", "");
             
-        if (course == null || course.length != 1) 
-            {
-                throw "Invalid Class Info";
-            } 
+			if (course == null || course.length != 1) 
+			{
+					throw "Invalid Class Info";
+			} 
 
-            const Course = course[0];
-
+            //const Course = course[0];
+	    //const Course = course.Code;
             
+            //console.log("This is the course from Course Value:" + Course);
             const db = client.db("LargeProject");
             const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)});
 
             var currentClasses = user.ClassesTaken
             var NowClasses = user.Classes
+         
             
-            const courses = currentClasses.push(Course);
-            const takenCourses = currentClasses.push(Course);
-
+            //const courses = currentClasses.push(Course);
+            //const takenCourses = currentClasses.push(Course);
+		
+	    //console.log("Error is below");
+	
+			for(var z = 0; z < currentClasses.length; z++)
+			{
+				console.log(currentClasses[z].Code);
+				//console.log(NowClasses[z].Code);
+				rex[z] = currentClasses[z].Code.toString();
+			}
+            //console.log(course.Code);
+            //console.log(Course);
+            //console.log("Why fail now?:" + courseX);
+            rex.push(courseX.toString());
+            
+            console.log(courseX.toString());
+            console.log(rex[1]);
+            
+            const courses = rex;
+            const takenCourses = rex;
+            
             // Reduces the prereqs to prereqs for the current classes taken to verify the pathing is correct
-            for( let y = 0; y <= takenCourses.length; y++)
+            
+            
+            for( let y = 0; y < rex.length; y++)
             {
-            rez = search_2d_array(prerequisites, takenCourses[y]);
-            for(let j = 0; j < rez.length; j++)
-            {
-                prereqNow.push(rez[j]);
-            }
+            	rez = search_2d_array(prerequisites, rex[y]);
+            	console.log(rez);
+            	for(let j = 0; j < rez.length; j++)
+            	{	
+            		//console.log(rez[j]);
+                	prereqNow.push(rez[j]);
+            	}
             //prereqNow.push(search_2d_array(prerequisites, takenCourses[y]));
             }
             
-            
+            console.log(prereqNow);
+            console.log("This is prereqNow:" + prereqNow);
             const courseGraph = new Map();
             const inDegree = new Map();
 
@@ -475,7 +511,7 @@ exports.setApp = function ( app, client ) {
             {
                 if (count === 0) 
                 {
-                queue.push(courseG);
+                	queue.push(courseG);
                 }
             }
     
@@ -501,23 +537,22 @@ exports.setApp = function ( app, client ) {
                     //{$push:{"Classes": Course}});
         
         
-            return JSON.stringify(sortedCourses) === JSON.stringify(courses);
+            //return JSON.stringify(sortedCourses) == JSON.stringify(courses);
             //console.log(canCompleteCoursesInOrder(courses, prereqNow)); // Should return true
         }
     // Check if the given order is consistent with the topological sort
     //return JSON.stringify(sortedCourses) === JSON.stringify(courses);
-    catch(e)
-    {
-        success = false;
-        error = e.toString();
+    	catch(e)
+    	{
+        	success = false;
+        	error = e.toString();
         
-    }
+    	}
 
-    ret = {Success: success, error: error};
-    res.status(200).json(ret);
+    	ret = {Success: success, error: error};
+    	res.status(200).json(ret);
 
     
     });
-
-
+    
 }
