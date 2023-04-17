@@ -86,13 +86,12 @@
   padding: 0.5vw;
 }
 
+.course-container {
+  width: 95.5vw;
+  height: 80vh;
+  margin-left: 60px
+}
 
-
-
-/*---- CSS Styles for this size screen ----*/
-
-@media only screen and (max-width: 1024px) {
-
-  
-
+.container {
+  width: 100vw;
 }
