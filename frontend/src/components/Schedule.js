@@ -1,12 +1,12 @@
 import React from 'react';
 import Scheduler, { Resource } from 'devextreme-react/scheduler';
-
+import { userId, token } from './Login';
 
 // Pull from database
 const link = 'http://localhost:5000/user/getClasses';
 
 async function getTimes() {
-  let classes = (await getUserInfo('640a38bd0c323e04090300a4','hello'));
+  let classes = (await getUserInfo(userId, token));
   classes = classes.Classes;
 
   const times = [];
