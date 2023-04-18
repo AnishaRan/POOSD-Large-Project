@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Button} from 'react-bootstrap';
 import './Courses.css';
+import { userId, token } from './Login';
 
 
 function Courses() {
@@ -49,6 +50,85 @@ function Courses() {
       return;
     }  
   };
+  
+  // Pull from database
+  const link = 'http://cop4331-ucaf1.herokuapp.com/user/addClass';
+
+  async function getUserInfo (userId, token) {
+    const response = await fetch(`${link}/${userId}/${token}`);
+    const data = await response.json();
+    return data;
+  };
+
+  async function addClasstoUser (className) {
+    console.log("Class Number Entered: ", className);
+
+    let obj = {
+      "Number": className,
+      "userId": userId,
+      "CookieToken": token
+    }
+
+    try {
+      const response = await fetch('http://cop4331-ucaf1.herokuapp.com/user/addClass', { 
+        method:'POST',  
+        headers:{
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify(obj),
+      });
+  
+      console.log("Add Class ", await response.text());
+    }
+    catch(error)
+    {
+      alert(error.toString());
+      return;
+    }  
+
+
+  }
+
+  const handleClickAdd = useCallback( (number) => () => {
+      addClasstoUser(number);
+    },
+    []
+  );
+
+  const handleClickRemove = useCallback( (number) => () => {
+    removeClasstoUser(number);
+  },
+  []
+  );
+
+  async function removeClasstoUser (className)  {
+    console.log("Class Number Entered Remove: ", className);
+
+    let obj = {
+      "Number": className,
+      "userId": userId,
+      "CookieToken": token
+    }
+
+    try {
+      const response = await fetch('http://cop4331-ucaf1.herokuapp.com/user/deleteClass', { 
+        method:'POST',  
+        headers:{
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify(obj),
+      });
+
+      console.log("Remove Class ", await response.text());
+
+    }
+    catch(error) {
+      alert(error.toString());
+      return;
+    }
+
+
+  }
 
   console.log(searchResults);
   return (
