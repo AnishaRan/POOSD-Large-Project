@@ -101,7 +101,7 @@ exports.setApp = function ( app, client ) {
         // outgoing new  id, error
 
         const {login, password, FirstName, LastName, Email} = req.body;
-        var cookieToken = Email.makeToken(20);
+        var cookieToken = jwt.sign({ Email : Email}, 'secret');
         const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email, VerKey:'', Verified:false, CookieToken:cookieToken};
         let error = '';
         let success = true;
@@ -136,34 +136,36 @@ exports.setApp = function ( app, client ) {
         const { Login, Password } = req.body;
 
         try {
-        const db = client.db("LargeProject");
-        const results = await db.collection('Users').find({Login:Login,Password:Password}).toArray();
+            const db = client.db("LargeProject");
+            const results = await db.collection('Users').find({Login:Login,Password:Password}).toArray();
 
-        var id = -1;
-        var fn = '';
-        var ln = '';
-        var em = '';
+            var id = -1;
+            var fn = '';
+            var ln = '';
+            var em = '';
+            var ver = false;
 
-        if( results.length > 0 )
-        {
-            id = results[0]._id;
-            fn = results[0].FirstName;
-            ln = results[0].LastName;
-            em = results[0].Email;
-        }
-        else
-        {
-            error = "failed to retrieve information.";
-        }
+            if( results.length > 0 )
+            {
+                id = results[0]._id;
+                fn = results[0].FirstName;
+                ln = results[0].LastName;
+                em = results[0].Email;
+                ver = results[0].Verified;
+            }
+            else
+            {
+                error = "failed to retrieve information.";
+            }
+                
+            var cookieToken = jwt.sign({ Email:em}, 'secret');
+            const result = await db.collection('Users').updateOne({Login:Login,Password:Password}, {$set:{CookieToken:cookieToken}});
             
-        var cookieToken = jwt.sign({ Email:em}, 'secret');
-        const result = await db.collection('Users').updateOne({Login:Login,Password:Password}, {$set:{CookieToken:cookieToken}});
-        
-        if (result.modifiedCount != 1) {
-            throw "failed to update cookie token.";
-        }
+            if (result.modifiedCount != 1) {
+                throw "failed to update cookie token.";
+            }
 
-        var ret = {id:id, FirstName:fn, LastName:ln, Email:em, CookieToken:cookieToken,error:error, succcess: true};
+            var ret = {id:id, FirstName:fn, LastName:ln, Email:em, CookieToken:cookieToken,error:error, Verified:ver, succcess: true};
         } catch (e) {
             var ret = {error:e.toString(), success:false};
         }
@@ -286,6 +288,8 @@ exports.setApp = function ( app, client ) {
             const result = await db.collection('Users').updateOne(
                 { "_id" : new mongoose.Types.ObjectId(userId) },
                 {$push:{"Classes": Course}});
+
+            error = result.modifiedCount;
         } catch(e) {
             success = false;
             error = e.toString();
@@ -388,171 +392,75 @@ exports.setApp = function ( app, client ) {
         res.status(200).json(retObj);
     });
 
-    app.post('/user/topoSort', async(req, res, next) => {
-    
-    
-		const {Number, userId, Code} = req.body;
-    
-		const courseX = Code;
-    
-		console.log("This is the course variable value:" + courseX);
-		const prerequisites = [['COP2500C', 'COP3223C'], ['CDA3103C', 'COP3223C'], ['CIS3360', 'COP3223C'], ['COP3502C', 'COP3223C'], ['COP3330', 'COP3223C'], ['COP3503C', 'COP3330'], ['COP3503C', 'COP3502C'], ['COP3503C', 'COT3100C'], ['COP3402', 'CDA3103C'], ['COP3402', 'COP3502C'], ['COP4331C', 'COP3503C'], ['COP4934', 'COP3402'], ['COP4935', 'COP4934'], ['COT4210', 'COP3503C']];
+    app.post('/user/deleteClass', async(req, res, next) => {
+        let error = '';
+        let success = true;
+        const {Number, userId, CookieToken} = req.body;
 
-    
-		function search_2d_array(arr, target) 
-		{
-			let result = [];
-			for (let sub_arr of arr) 
-			{
-				if (sub_arr.length >= 2 && sub_arr[0] === target)
-				{
-					console.log(sub_arr);
-					result.push(sub_arr);
-				}
-			}
-			console.log("This is the result value:" + result);
-			return result;
-		}
+        try {
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
 
-    
-		let error = '';
-		let success = true;
-
-        //const {Number, userID, Code} = req.body;
-
-        try 
-        {
-        
-        	let rex = [];
-        	var rez = [];
-        	let prereqNow = [];
-        
-			var course = await Class.findClass(Code, "LEC", "", "", Number, "", null, "", "", "", "");
-			console.log("This is the course:" + Code);
-            
-			//var course2 = await Class.findClass(Code, "LAB", "", "", "", "", null, "", "", "", "");
-            
-			if (course == null || course.length != 1) 
-			{
-					throw "Invalid Class Info";
-			} 
-
-            //const Course = course[0];
-	    //const Course = course.Code;
-            
-            //console.log("This is the course from Course Value:" + Course);
             const db = client.db("LargeProject");
-            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)});
-
-            var currentClasses = user.ClassesTaken
-            var NowClasses = user.Classes
-         
-            
-            //const courses = currentClasses.push(Course);
-            //const takenCourses = currentClasses.push(Course);
-		
-	    //console.log("Error is below");
-	
-			for(var z = 0; z < currentClasses.length; z++)
-			{
-				console.log(currentClasses[z].Code);
-				//console.log(NowClasses[z].Code);
-				rex[z] = currentClasses[z].Code.toString();
-			}
-            //console.log(course.Code);
-            //console.log(Course);
-            //console.log("Why fail now?:" + courseX);
-            rex.push(courseX.toString());
-            
-            console.log(courseX.toString());
-            console.log(rex[1]);
-            
-            const courses = rex;
-            const takenCourses = rex;
-            
-            // Reduces the prereqs to prereqs for the current classes taken to verify the pathing is correct
-            
-            
-            for( let y = 0; y < rex.length; y++)
-            {
-            	rez = search_2d_array(prerequisites, rex[y]);
-            	console.log(rez);
-            	for(let j = 0; j < rez.length; j++)
-            	{	
-            		//console.log(rez[j]);
-                	prereqNow.push(rez[j]);
-            	}
-            //prereqNow.push(search_2d_array(prerequisites, takenCourses[y]));
-            }
-            
-            console.log(prereqNow);
-            console.log("This is prereqNow:" + prereqNow);
-            const courseGraph = new Map();
-            const inDegree = new Map();
-
-            // Initialize courseGraph and inDegree
-            for (const courseG of courses) 
-            {
-                courseGraph.set(courseG, []);
-                inDegree.set(courseG, 0);
-            }
-
-        // Populate courseGraph and inDegree based on prerequisites
-            for (const [courseG, prereq] of prereqNow) 
-            {
-                courseGraph.get(prereq).push(courseG);
-                inDegree.set(courseG, inDegree.get(courseG) + 1);
-            }
-
-    // Perform topological sort
-            const queue = [];
-        
-            for (const [courseG, count] of inDegree.entries()) 
-            {
-                if (count === 0) 
-                {
-                	queue.push(courseG);
-                }
-            }
-    
-            const sortedCourses = [];
-        
-            while (queue.length) 
-            {
-                const currentCourse = queue.shift();
-                sortedCourses.push(currentCourse);
-
-                for (const nextCourse of courseGraph.get(currentCourse)) 
-                {
-                    inDegree.set(nextCourse, inDegree.get(nextCourse) - 1);
-                    if (inDegree.get(nextCourse) === 0) 
-                    {
-                        queue.push(nextCourse);
-                    }
-                }
-            }
-
-            //const result = await db.collection('Users').updateOne(
-                    //{ "_id" : new mongoose.Types.ObjectId(userId) },
-                    //{$push:{"Classes": Course}});
-        
-        
-            //return JSON.stringify(sortedCourses) == JSON.stringify(courses);
-            //console.log(canCompleteCoursesInOrder(courses, prereqNow)); // Should return true
+            const result = await db.collection('Users').updateOne(
+                { "_id" : new mongoose.Types.ObjectId(userId) },
+                {$pull:{"Classes": {Number: Number}}});
+        } catch(e) {
+            success = false;
+            error = e.toString();
         }
-    // Check if the given order is consistent with the topological sort
-    //return JSON.stringify(sortedCourses) === JSON.stringify(courses);
-    	catch(e)
-    	{
-        	success = false;
-        	error = e.toString();
         
-    	}
-
-    	ret = {Success: success, error: error};
-    	res.status(200).json(ret);
-
-    
+        ret = {Success: success, error: error};
+        res.status(200).json(ret);
     });
-    
+
+    app.post('/user/deleteClassTaken', async(req, res, next) => {
+        let error = '';
+        let success = true;
+        const {Number, userId, CookieToken} = req.body;
+
+        try {
+            if (!this.verifyCookieToken(CookieToken, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
+            const db = client.db("LargeProject");
+            const result = await db.collection('Users').updateOne(
+                { "_id" : new mongoose.Types.ObjectId(userId) },
+                {$pull:{"ClassesTaken": {Number: Number}}});
+        } catch(e) {
+            success = false;
+            error = e.toString();
+        }
+        
+        ret = {Success: success, error: error};
+        res.status(200).json(ret);
+    });
+
+    app.get('/user/getClassesTaken/:userId/:jwt', async(req, res, next) => {
+        
+        let error = '';
+        let success = true;
+        const {userId, jwt} = req.params;
+        
+        console.log(userId);
+        
+        try {
+            if (!this.verifyCookieToken(jwt, userId)) {
+                throw 'Invalid Cookie Token';
+            }
+
+            const db = client.db("LargeProject");
+            const user = await db.collection('Users').findOne({ "_id" : new mongoose.Types.ObjectId(userId)}); 
+            
+            var classesTaken = user.ClassesTaken;
+        } catch(e) {
+            success = false;
+            error = e.toString();
+        }
+        
+        ret = {Success: success, Classes: classesTaken, error: error};
+        res.status(200).json(ret);
+    });
 }
