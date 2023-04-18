@@ -460,7 +460,7 @@ exports.setApp = function ( app, client ) {
             error = e.toString();
         }
         
-        ret = {Success: success, Classes: classesTaken, error: error};
+        ret = {Success: success, ClassesTakenA: classesTaken, error: error};
         res.status(200).json(ret);
     });
 }
