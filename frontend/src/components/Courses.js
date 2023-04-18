@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Form, Button} from 'react-bootstrap';
 import './Courses.css';
 import { userId, token } from './Login';
-
 
 function Courses() {
 
@@ -33,7 +32,7 @@ function Courses() {
     };
 
     try {
-      const response = await fetch('http://cop4331-ucaf1.herokuapp.com/class/search', { 
+      const response = await fetch('https://cop4331-ucaf1.herokuapp.com/class/search', { 
         method:'POST',  
         headers:{ 
           'Content-Type': 'application/json'
@@ -50,27 +49,19 @@ function Courses() {
       return;
     }  
   };
+
   
-  // Pull from database
-  const link = 'http://cop4331-ucaf1.herokuapp.com/user/addClass';
-
-  async function getUserInfo (userId, token) {
-    const response = await fetch(`${link}/${userId}/${token}`);
-    const data = await response.json();
-    return data;
-  };
-
   async function addClasstoUser (className) {
     console.log("Class Number Entered: ", className);
 
     let obj = {
       "Number": className,
-      "userId": userId,
-      "CookieToken": token
+      "userId": '640a38bd0c323e04090300a4',
+      "CookieToken": 'hello'
     }
 
     try {
-      const response = await fetch('http://cop4331-ucaf1.herokuapp.com/user/addClass', { 
+      const response = await fetch('https://cop4331-ucaf1.herokuapp.com/user/addClass', { 
         method:'POST',  
         headers:{
           'Content-Type': 'application/json'
@@ -111,7 +102,7 @@ function Courses() {
     }
 
     try {
-      const response = await fetch('http://cop4331-ucaf1.herokuapp.com/user/deleteClass', { 
+      const response = await fetch('https://cop4331-ucaf1.herokuapp.com/user/deleteClass', { 
         method:'POST',  
         headers:{
           'Content-Type': 'application/json'
@@ -130,7 +121,6 @@ function Courses() {
 
   }
 
-  console.log(searchResults);
   return (
     <div>
       <div>
@@ -140,12 +130,14 @@ function Courses() {
               type="text" 
               placeholder="Enter course title" 
               onChange={(event) => setSearchCriteria({ ...searchCriteria, title: event.target.value })}
+              className="form-label"
             />
           </Form.Group>
 
           <Button onClick={searchCourses} variant="primary" type="submit"> Search </Button>
         </Form>
       </div>
+      <br/>
       <table className="table table-striped table-hover text-nowrap">
         <thead className="thead-dark">
           <tr>
@@ -170,14 +162,14 @@ function Courses() {
                 <td>{row.Professor.FirstName} {row.Professor.LastName}</td>
                 <td>{row.Times}</td>
                 <td >
-                  <Button variant="success" onClick="">Add Class</Button>
+                  <Button className="btn-success" onClick={handleClickAdd(row.Number)}>Add Class</Button>
                 </td>
                 <td>
-                  <Button variant="danger" onClick="">Remove Class</Button>
+                  <Button className="btn-danger" onClick={handleClickRemove(row.Number)}>Remove Class</Button>
                 </td>
               </tr>
             );
-          })}    
+          })}
         </tbody>
       </table>
     </div>
