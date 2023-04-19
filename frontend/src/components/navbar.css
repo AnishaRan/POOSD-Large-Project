@@ -67,15 +67,15 @@ main {
 }
 
 .link:hover {
-  border-right: 4px solid #ecda0f;
-  background: #f1df0f;
+  border-right: 4px solid #F8CD46;
+  background: #F8CD46;
   color: #fff;
   transition: 0.1s cubic-bezier(0.1, -0.28, 0.735, 0.045);
 }
 
 .active {
-  border-right: 4px solid #ecda0f;
-  background: #ecda0f;
+  border-right: 4px solid #F8CD46;
+  background: #F8CD46;
 }
 
 .link_text {
@@ -102,5 +102,5 @@ main {
 }
 .menu_container .link {
   padding-left: 20px;
-  border-bottom: #ecda0f 0.5px solid;
+  border-bottom: #F8CD46 0.5px solid;
 }
