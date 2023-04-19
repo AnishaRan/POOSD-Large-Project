@@ -95,3 +95,159 @@
 .container {
   width: 100vw;
 }
+
+.wrapper {
+  text-align: center;
+}
+
+.registerDiv {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 1vw;
+  display: grid;
+  width: 35vw;
+  column-gap: 30px;
+  margin-top: 250px;
+  padding-top: 50px;
+  padding-bottom: 60px;
+}
+
+
+@media screen and (max-width: 1700px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 2vw;
+    display: grid;
+    width: 25vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    width: 19vw;
+  }
+}
+
+@media screen and (max-width: 1600px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 2vw;
+    display: grid;
+    width: 30vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    width: 24vw;
+  }
+}
+
+@media screen and (max-width: 1300px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 2vw;
+    display: grid;
+    width: 33vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    width: 24vw;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 3vw;
+    display: grid;
+    width: 44vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    width: 30vw;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 3vw;
+    display: grid;
+    width: 55vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    width: 41vw;
+  }
+}
+
+@media screen and (max-width: 670px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5vw;
+    display: grid;
+    width: 72vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+  .formSpacer {
+    width: 55vw;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5vw;
+    display: grid;
+    width: 80vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+  
+  .logo {
+    width: 50px;
+    margin-right: 1vw;
+    padding: 0.5vw;
+  }
+  
+  .logo-login {
+    width: 70px;
+    margin-right: 1vw;
+    padding: 0.5vw;
+  }
+  .formSpacer {
+    margin-left: 52px;
+    width: 60vw;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .loginDiv {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5vw;
+    display: grid;
+    width: 82vw;
+    column-gap: 10px;
+    margin-top: 250px;
+    padding-top: 50px;
+  }
+
+  .formSpacer {
+    margin-left: 42px;
+    width: 60vw;
+  }
+}
