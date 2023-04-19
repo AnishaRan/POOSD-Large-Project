@@ -13,7 +13,9 @@
 .main-container {
   display: flex;
   position: fixed;
+  z-index: 9999;
 }
+
 main {
   padding: 10px;
 }
