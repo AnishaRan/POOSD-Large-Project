@@ -19,5 +19,24 @@ tr.hide-table-padding td {
   content: '+';
 }
 
+.btn-success {
+  color: #0f0f0f;
+  background-color: #fad456 !important;
+  border-color: #ca9e0f;
+}
 
+.btn-success:hover {
+  background-color: #f7b11a !important;
+  border-color: #806200;
+}
+
+.btn-danger {
+  background-color: #414141 !important;
+  border-color: #0f0f0f;
+}
+
+.btn-danger:hover {
+  background-color: #141414 !important;
+  border-color: #000000;
+}
 
