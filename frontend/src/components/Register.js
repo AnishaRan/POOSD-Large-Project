@@ -16,13 +16,11 @@ function Register() {
 
     const [message, setMessage] = useState("");
 
-
-    const app_name = 'cop4331-ucaf1'
     function buildPath(route)
     {
         if (process.env.NODE_ENV === 'production') 
         {
-            return 'https://' + app_name +  '.herokuapp.com/' + route;
+            return 'https://cop4331-ucaf1.herokuapp.com/' + route;
         }
         else
         {        
@@ -31,9 +29,6 @@ function Register() {
     }
 
     const doRegister = async (event) => {
-
-
-        
 
         event.preventDefault();
 
@@ -50,12 +45,7 @@ function Register() {
             return;
         }
         
-
-        console.log(regFirstName.value);
-        //console.log(regLastName.value);
-
         let js = JSON.stringify(temp);
-        const headers = {"Content-Type": "application/json"}
         
         try {
                 const response = await fetch(buildPath('user/register'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
@@ -65,31 +55,15 @@ function Register() {
             if(res.id <= 0) {
                 setMessage("Registration Error");
             }
-            else {
-                
-                var user = {
-                    FirstName: res.regFirstName,
-                    LastName: res.regLastName,
-                    //id: res.id,
-                    login: res.regUsername,
-                    password: res.regPassword,
-                    Email: res.regEmail
-
-                }
-                localStorage.setItem('user_data', JSON.stringify(user));
-
+            else {      
                 setMessage('');
-                window.location.href = '/cards';
-                console.log("Hello");
+                window.location.href = '/';
             }
         }
         catch (e) {
             alert(e.toString());
             return;
         }
-
-
-
     };
 
 
