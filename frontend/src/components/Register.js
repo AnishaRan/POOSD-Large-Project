@@ -101,7 +101,8 @@ function Register() {
                         <div id="registerDiv" class="registerDiv">
                             <PageTitle/>
                             <form class="form-inline" onSubmit={doRegister}>
-                                <span class="d-flex justify-content-center pt-4" id="inner-title"></span><br/>
+                                <h4 className="d-flex justify-content-center mt-2">Register</h4>
+                                <span class="d-flex justify-content-center pt-1" id="inner-title"></span><br/>
                                 <div class="form-group mx-sm-5 mb-1">
                                     <input class="form-control" type="text" id="regFirstName" placeholder="First Name" ref={(c) => regFirstName = c}/><br/>
                                 </div>
@@ -123,7 +124,7 @@ function Register() {
                                 
                             </form>
                             <span class="d-flex justify-content-center" id="registerResult">{message}</span>
-                            <div class="row pt-3 pb-4 d-flex justify-content-center">
+                            <div class="row pt-3 pb-1 d-flex justify-content-center">
                                 <div class="col-md-auto">Already have an account?</div>
                                 <div class="col-md-auto"><Link to='/'>Login Here.</Link></div>
                             </div>
