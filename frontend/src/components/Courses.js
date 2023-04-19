@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Form, Button} from 'react-bootstrap';
 import './Courses.css';
-import { userId, token } from './Login';
 
 function Courses() {
 
@@ -52,12 +51,12 @@ function Courses() {
 
   
   async function addClasstoUser (className) {
-    console.log("Class Number Entered: ", className);
+    
 
     let obj = {
       "Number": className,
-      "userId": '640a38bd0c323e04090300a4',
-      "CookieToken": 'hello'
+      "userId": localStorage.getItem('a'),
+      "CookieToken": localStorage.getItem('b'),
     }
 
     try {
@@ -69,15 +68,12 @@ function Courses() {
         body: JSON.stringify(obj),
       });
   
-      console.log("Add Class ", await response.text());
     }
     catch(error)
     {
       alert(error.toString());
       return;
     }  
-
-
   }
 
   const handleClickAdd = useCallback( (number) => () => {
@@ -97,8 +93,8 @@ function Courses() {
 
     let obj = {
       "Number": className,
-      "userId": userId,
-      "CookieToken": token
+      "userId": localStorage.getItem('a'),
+      "CookieToken": localStorage.getItem('b'),
     }
 
     try {
@@ -110,7 +106,6 @@ function Courses() {
         body: JSON.stringify(obj),
       });
 
-      console.log("Remove Class ", await response.text());
 
     }
     catch(error) {
