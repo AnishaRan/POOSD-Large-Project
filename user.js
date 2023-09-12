@@ -102,7 +102,7 @@ exports.setApp = function ( app, client ) {
 
         const {login, password, FirstName, LastName, Email} = req.body;
         var cookieToken = jwt.sign({ Email : Email}, 'secret');
-        const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email, VerKey:'', Verified:false, CookieToken:cookieToken};
+        const newUser = {Login: login, Password: password, FirstName: FirstName, LastName: LastName, Email: Email, VerKey:'', Verified:false, Classes:[], ClassesTaken:[], CookieToken:cookieToken};
         let error = '';
         let success = true;
         let newID = -1;

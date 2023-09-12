@@ -17,7 +17,7 @@ client.connect(console.log("Email.js:\t\tmongodb connected"));
 const userName = 'uactuallycanfinish';  
 const email = userName + '@outlook.com';
 
-async function tokensender (user, tok) {
+async function tokensender (user, tok, message) {
     const transporter = nodemailer.createTransport ({
         service: "hotmail",
         auth: {
@@ -37,7 +37,7 @@ async function tokensender (user, tok) {
         from: email, // my email
         to: user.Email, // user email
         subject: "Email Verification",
-        text: `Hi ${user.FirstName} ${user.LastName},\n\nPlease click on the following link to verify your email address:\nhttp://localhost:5000/email/verify/${user._id}/${tok}\n\nThank you,\nUCanActuallyFinish}`
+        text: `Hi ${user.FirstName} ${user.LastName},\n` + message
     };
 
     transporter.sendMail(mailConfigurations, function (error, info) {
@@ -80,13 +80,62 @@ exports.setApp = function ( app, client ) {
             const db = client.db("LargeProject");
             db.collection('Users').updateOne({"_id" : new mongoose.Types.ObjectId(userId)}, {$set: {"VerKey": verificationString}});
 
-            await tokensender(user, verificationString);
+            const message = `Please click on the following link to verify your email address:\nhttps://cop4331-ucaf1.herokuapp.com/email/verify/${user._id}/${verificationString}\n\nThank you,\nU Actually Can Finish`;
+
+            await tokensender(user, verificationString, message);
         } catch (e) {
             error = e.toString();
             success = false;
         }
 
         res.status(200).json({Success: success, err : error});
+    });
+
+    app.post('/email/passwordreset', async (req, res, next) => {
+        const { Email } = req.body;
+        
+        var error = '';
+        var success = true;
+
+        try {
+            var user = null;
+
+            const db = client.db("LargeProject");
+            const result = await db.collection('Users').find({Email:Email}).toArray();
+
+            var ret = [];
+            for (let i = 0; i < result.length; i++) {
+                ret.push(result[i]);
+            }
+
+            if (ret.length == 0) {
+                throw new Error('Email Invalid');
+            }
+
+            user = ret[0];
+
+            if (user == null) {
+                user = null;
+                throw new Error('Email Invalid');
+            }
+
+            if (user.Verified != true) {
+                throw new Error('User Not Verified');
+            }
+
+            var verificationString = this.makeToken(6);
+            db.collection('Users').updateOne({"_id" : new mongoose.Types.ObjectId(user._id)}, {$set: {"VerKey": verificationString}});
+
+            const message = `Please use the following code to reset your password:\n\n${verificationString}\n\nIf you did not expect this email please ignore it.\n\nThank you,\nU Actually Can Finish`;
+
+            await tokensender(user, verificationString, message);
+        } catch (e) {
+            error = e.toString();
+            success = false;
+        }
+
+        res.status(200).json({Success: success, user:user, err : error,  token: verificationString});
+
     });
 
     app.get('/email/verify/:userId/:token', async (req, res, next) => {
