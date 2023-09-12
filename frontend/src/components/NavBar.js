@@ -2,16 +2,17 @@
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import {
-  FaBars,
+  FaBars, 
+  FaTh,
   FaList,
-  FaRegCalendar
-} from "react-icons/fa";
+  FaRegCalendar,
+  FaRegSun,
+  FaSignOutAlt
+} from "../../node_modules/react-icons/fa"; // Temp icons for now, can be updated for better fit
+import Logo from '../images/logo.png';
+import './navbar.css';
 import { AnimatePresence, motion } from "framer-motion";
 import SidebarMenu from "./SidebarMenu";
-
-// Components
-import './navbar.css';
-import Logo from '../images/logo.png';
 
 
 const NavBar = ({children}) => {
@@ -20,15 +21,21 @@ const NavBar = ({children}) => {
   const toggle = () => setIsOpen (!isOpen);
 
   const menuItem = [
+
+    {
+      path:"/courses",
+      name:"Courses",
+      icon:<FaList/>,
+    },
     {
       path:"/schedule",
       name:"Schedule",
       icon:<FaRegCalendar/>,
     },
     {
-      path:"/courses",
-      name:"Courses",
-      icon:<FaList/>,
+      path:"/",
+      name:"Sign Out",
+      icon:<FaSignOutAlt/>,
     }
   ]
 
@@ -96,7 +103,7 @@ const NavBar = ({children}) => {
               }
 
               return (
-                <NavLink to={route.path}  key={index} className="link" activeclassname="active" >
+                <NavLink to={route.path}  key={index} className="link" activeClassName="active" >
                   <div className="icon">{route.icon}</div>
                   <AnimatePresence>
                     {isOpen && (

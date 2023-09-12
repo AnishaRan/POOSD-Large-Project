@@ -1,14 +1,15 @@
 import React from 'react';
-import Login from '../components/Login';
-import '../App.css';
 
+import Login from '../components/Login';
 
 const LoginPage = () =>
 {
-    return(
-      <div class="login-bg">
-        <Login />
-      </div>
-    );
+
+  return(
+   <div class="login-bg">
+    <Login />
+   </div>
+  );
 };
+
 export default LoginPage;

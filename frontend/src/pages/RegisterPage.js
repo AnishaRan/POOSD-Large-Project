@@ -1,12 +1,13 @@
 import React from 'react';
 
+import PageTitle from '../components/PageTitle';
 import Register from '../components/Register';
 
 const RegisterPage = () =>
 {
 
   return(
-   <div className="login-bg">
+   <div class="register-bg">
     <Register />
    </div>
   );

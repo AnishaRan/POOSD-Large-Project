@@ -1,17 +1,32 @@
 // React Libraries
-import React from 'react';
+import React, { useState } from 'react';
 
-// Components
+// Bootstrap
+import Container from 'react-bootstrap/Container';
 import Courses from '../components/Courses';
+import NavBar from '../components/NavBar';
+import Row from 'react-bootstrap/Row';
+
 
 function CoursesPage() {
 
 
 	return(
-	    <div className="course-container">
-	      <h1 className="d-flex justify-content-center">Add Courses</h1>
-	      <Courses/>
-	    </div>
+		<div>
+			<NavBar />
+			<div className="container">
+			
+				<Row classname = "d-flex align-items-center">
+				<h1>Courses</h1>
+			</Row>      
+			<hr/>
+			<Row className="d-flex justify-content-center">
+			<Courses className= "d-flex col"/>
+			</Row>
+			
+			</div>
+	
+		</div>
 	);
 };
 export default CoursesPage;

@@ -1,12 +1,14 @@
+// React Libraries
 import React from 'react';
 import Scheduler, { Resource } from 'devextreme-react/scheduler';
-import { userId, token } from './Login';
+
 
 // Pull from database
-const link = 'http://localhost:5000/user/getClasses';
+const link = 'https://cop4331-ucaf1.herokuapp.com/user/getClasses';
 
 async function getTimes() {
-  let classes = (await getUserInfo(userId, token));
+  let classes = (await getUserInfo(localStorage.getItem('a'), localStorage.getItem('b') ));
+  console.log(classes.Classes);
   classes = classes.Classes;
 
   const times = [];
@@ -23,9 +25,10 @@ async function getTimes() {
   return times;
 }
 
-async function getUserInfo (userId, token) {
-  const response = await fetch(`${link}/${userId}/${token}`);
+async function getUserInfo (id, tokens) {
+  const response = await fetch(`${link}/${id}/${tokens}`);
   const data = await response.json();
+  //console.log(data);
   return data;
 };
 
@@ -49,9 +52,13 @@ function formatTime(string) {
   startTime = start;
   endTime = end;
 
-  for (let i = 0; i < string.length; i++) {
-    if (days[string[i]]) {
-      daysArray.push(days[string[i]]);
+  const daysString = string.slice(0, string.indexOf(timeString)).trim();
+
+  console.log(daysString);
+
+  for (let i = 0; i < daysString.length; i++) {
+    if (days[daysString[i]]) {
+      daysArray.push(days[daysString[i]]);
     }
   }
 
@@ -65,16 +72,17 @@ function formatTime(string) {
 let times = [];
 
 (async function() { 
-  times = await getTimes();
+  //console.log("UserId", localStorage.getItem('a'));
+  //console.log("Token", localStorage.getItem('b'));
 
+  times = await getTimes();
   convertFormats();
 })();
-
 
 let CourseCalendar = [];
 
 // Convert the database formats to match the calendar
-function convertFormats() {
+async function convertFormats() {
 
   for (let i = 0; i < times.length; i++) {
     // Convert rRule format
@@ -109,15 +117,17 @@ function convertFormats() {
     }
 
     let editedText = tempRule.slice(0, -1);
-    
     // Convert startTime and endTime
-    let semesterStart = 'January 9, 2023';
 
     if(times[i].Time.startTime.slice(-2) === 'PM') {
-      times[i].Time.endTime = semesterStart + " " + times[i].Time.endTime +' PM';
-      times[i].Time.startTime = semesterStart + " " + times[i].Time.startTime +' PM';
+      times[i].Time.endTime = "January 9, 2023 " + times[i].Time.endTime + ' PM';
+      times[i].Time.startTime = "January 9, 2023 " + times[i].Time.startTime +' PM';
     }
-
+    else {
+      times[i].Time.endTime = "January 9, 2023 " + times[i].Time.endTime + ' AM';
+      times[i].Time.startTime = "January 9, 2023 " + times[i].Time.startTime + ' AM';
+    }
+    
     let obj = { 
       text: times[i].Title,
       startDate: new Date(times[i].Time.startTime),
@@ -127,10 +137,7 @@ function convertFormats() {
     };
     CourseCalendar.push(obj);
   }
-
-  //console.log(CourseCalendar);
 }
-
 
 export const resourcesData = [
   {
@@ -164,13 +171,13 @@ function Schedule()  {
 
   return (
     <Scheduler
-    timeZone="America/New_York"
-    dataSource={CourseCalendar}
-    views={views}
-    defaultCurrentView="month"
-    defaultCurrentDate={currentDate}
-    startDayHour={9}
-    height={800}
+      timeZone="America/New_York"
+      dataSource={CourseCalendar}
+      views={views}
+      defaultCurrentView="month"
+      defaultCurrentDate={currentDate}
+      startDayHour={5}
+      height={850}
     >
     <Resource
       dataSource={resourcesData}

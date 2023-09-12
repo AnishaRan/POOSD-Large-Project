@@ -1,3 +1,4 @@
+//React Libraries
 import React, { useState, useCallback } from 'react';
 import { Form, Button} from 'react-bootstrap';
 import './Courses.css';
@@ -48,16 +49,15 @@ function Courses() {
       return;
     }  
   };
-
   
   async function addClasstoUser (className) {
-    
 
     let obj = {
       "Number": className,
       "userId": localStorage.getItem('a'),
       "CookieToken": localStorage.getItem('b'),
     }
+    console.log(obj);
 
     try {
       const response = await fetch('https://cop4331-ucaf1.herokuapp.com/user/addClass', { 
@@ -68,12 +68,15 @@ function Courses() {
         body: JSON.stringify(obj),
       });
   
+      console.log("Add Class ", await response.text());
     }
     catch(error)
     {
       alert(error.toString());
       return;
     }  
+
+
   }
 
   const handleClickAdd = useCallback( (number) => () => {
@@ -106,6 +109,7 @@ function Courses() {
         body: JSON.stringify(obj),
       });
 
+      console.log("Remove Class ", await response.text());
 
     }
     catch(error) {
@@ -172,6 +176,3 @@ function Courses() {
 }
 
 export default Courses;
-
-
-

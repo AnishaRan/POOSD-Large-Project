@@ -5,21 +5,22 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 // Components
-import NavBar from './components/NavBar';
+import NavBar from '../components/NavBar';
 
 // Links
-import Dashboard from './pages/DashboardPage';
-import Courses from './pages/CoursesPage';
-import Schedule from './pages/SchedulePage';
-import LoginPage from './pages/LoginPage';
-import CardPage from './pages/CardPage';
+import MainPage from '../pages/MainPage';
+import Dashboard from '../pages/DashboardPage';
+import Courses from '../pages/CoursesPage';
+import SchedulePage from '../pages/SchedulePage';
+import PageTitle from '../components/PageTitle';
+//import LoginPage from './pages/LoginPage';
+//import CardPage from './pages/CardPage';
 
 
 function App () {
   return (
-    <BrowserRouter>
+    /*<BrowserRouter>
       <NavBar>
         <Routes>
           <Route path="/" index element={<Dashboard />} />
@@ -28,7 +29,10 @@ function App () {
           <Route path="/schedule" element={<Schedule />} />
         </Routes>
       </NavBar>
-    </BrowserRouter>
+    </BrowserRouter>*/
+    <div>
+    <Dashboard />
+   </div>
   );
 }
 export default App;

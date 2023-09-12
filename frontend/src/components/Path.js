@@ -1,4 +1,4 @@
-const app_name = 'cop4331-99'
+const app_name = 'cop4331-ucaf1'
 exports.buildPath =
 function buildPath(route) {
 if (process.env.NODE_ENV === 'production') {
